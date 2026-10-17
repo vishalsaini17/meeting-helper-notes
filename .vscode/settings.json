@@ -1,0 +1,13 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "npm install": true,
+    "/^node node_modules/electron/install\\.js$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^node -p \"require\\('electron'\\)\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
+}

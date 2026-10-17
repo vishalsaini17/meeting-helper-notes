@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' ws://localhost:* http://localhost:*"
+    />
+    <title>Meeting Note Helper</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="title-strip">
+        <div class="title-tabs" id="tab-list" role="tablist" aria-label="Open documents"></div>
+        <button class="new-tab-button" id="new-button" type="button" title="New tab (Ctrl+T)" aria-label="New tab">+</button>
+      </header>
+
+      <div class="toolbar">
+        <nav class="format-toolbar" role="toolbar" aria-label="Markdown formatting">
+          <div class="format-group" data-overflow-priority="0" data-format-group="history">
+            <button class="format-button history-button" data-command="undo" type="button" aria-label="Undo" title="Undo (Ctrl+Z)">&#8634;</button>
+            <button class="format-button history-button" data-command="redo" type="button" aria-label="Redo" title="Redo (Ctrl+Y)">&#8635;</button>
+          </div>
+          <div class="format-group" data-overflow-priority="1" data-format-group="heading">
+            <span class="toolbar-separator" aria-hidden="true"></span>
+            <label class="visually-hidden" for="heading-style">Text style</label>
+            <select id="heading-style" class="heading-select" aria-label="Text style">
+              <option value="paragraph">Text</option>
+              <option value="1">Heading 1</option>
+              <option value="2">Heading 2</option>
+              <option value="3">Heading 3</option>
+            </select>
+          </div>
+          <div class="format-group" data-overflow-priority="2" data-format-group="inline">
+            <span class="toolbar-separator" aria-hidden="true"></span>
+            <button class="format-button format-bold" data-command="bold" type="button" aria-label="Bold" title="Bold (Ctrl+B)">B</button>
+            <button class="format-button format-italic" data-command="italic" type="button" aria-label="Italic" title="Italic (Ctrl+I)">I</button>
+            <button class="format-button format-strike" data-command="strike" type="button" aria-label="Strikethrough" title="Strikethrough">S</button>
+          </div>
+          <div class="format-group" data-overflow-priority="3" data-format-group="lists">
+            <span class="toolbar-separator" aria-hidden="true"></span>
+            <button class="format-button" data-command="bullet-list" type="button" aria-label="Bulleted list" title="Bulleted list (Ctrl+Shift+8)">&#8226;</button>
+            <button class="format-button ordered-button" data-command="ordered-list" type="button" aria-label="Numbered list" title="Numbered list (Ctrl+Shift+7)">1.</button>
+          </div>
+          <div class="format-group" data-overflow-priority="4" data-format-group="quote">
+            <button class="format-button quote-button" data-command="quote" type="button" aria-label="Block quote" title="Block quote (Ctrl+Shift+.)">&#8220;</button>
+          </div>
+          <div class="format-group" data-overflow-priority="5" data-format-group="code">
+            <span class="toolbar-separator" aria-hidden="true"></span>
+            <button class="format-button code-button" data-command="inline-code" type="button" aria-label="Inline code" title="Inline code (Ctrl+Shift+C)">&lt;/&gt;</button>
+            <button class="format-button code-button" data-command="code-block" type="button" aria-label="Code block" title="Code block (Ctrl+Shift+B)">{ }</button>
+          </div>
+          <div class="format-group" data-overflow-priority="6" data-format-group="link">
+            <button class="format-button" data-command="link" type="button" aria-label="Insert link" title="Insert link (Ctrl+K)">&#128279;</button>
+          </div>
+          <div class="format-group" data-overflow-priority="7" data-format-group="rule">
+            <button class="format-button rule-button" data-command="rule" type="button" aria-label="Horizontal rule" title="Horizontal rule (Ctrl+Shift+H)">&#8213;</button>
+          </div>
+        </nav>
+        <div class="toolbar-overflow" id="format-overflow">
+          <button class="format-button overflow-toggle" id="format-overflow-toggle" type="button" aria-label="More formatting" aria-controls="format-overflow-menu" aria-expanded="false" title="More formatting" hidden>...</button>
+          <div class="format-overflow-menu" id="format-overflow-menu" role="group" aria-label="More formatting" hidden></div>
+        </div>
+        <div class="other-tools" role="group" aria-label="Window tools">
+          <button class="format-button window-toggle-button" id="always-on-top-button" type="button" aria-label="Always on top, disabled" aria-pressed="false" title="Always on top (disabled)" data-state="off">📌</button>
+          <button class="format-button window-toggle-button" id="screen-privacy-button" type="button" aria-label="Screen privacy, disabled" aria-pressed="false" title="Screen privacy (disabled)" data-state="off">🛡</button>
+          <button class="format-button window-toggle-button" id="theme-toggle-button" type="button" aria-label="Dark theme" aria-pressed="false" title="Dark theme (Ctrl+Shift+Alt+D)">☾</button>
+          <label class="opacity-control" for="window-opacity">
+            <span>Opacity</span>
+            <input id="window-opacity" type="range" min="25" max="100" step="5" value="100" aria-label="Window opacity, 25 to 100 percent (Ctrl+Shift+Alt+O to focus; use arrow keys to adjust)" title="Window opacity (Ctrl+Shift+Alt+O to focus; use arrow keys to adjust)" />
+            <output id="window-opacity-value" for="window-opacity">100%</output>
+          </label>
+        </div>
+      </div>
+
+      <main class="workspace" id="editor">
+        <div class="editor-canvas">
+          <div id="editor-root" aria-label="Markdown editor"></div>
+        </div>
+      </main>
+
+      <footer class="status-bar" aria-label="Document status">
+        <div class="status-primary">
+          <span class="status-indicator" id="status-indicator" aria-hidden="true"></span>
+          <span id="status-text" role="status" aria-live="polite">Ready</span>
+        </div>
+        <div class="status-metrics">
+          <span><strong id="word-count">0</strong> words</span>
+          <span class="metric-divider" aria-hidden="true"></span>
+          <span><strong id="character-count">0</strong> characters</span>
+        </div>
+        <span class="file-format">MARKDOWN <span aria-hidden="true">/</span> UTF-8</span>
+      </footer>
+    </div>
+
+    <div class="dialog-backdrop" id="decision-dialog" hidden>
+      <section class="decision-panel" role="alertdialog" aria-modal="true" aria-labelledby="decision-title" aria-describedby="decision-message">
+        <span class="dialog-mark" aria-hidden="true">!</span>
+        <p class="eyebrow">UNSAVED CHANGES</p>
+        <h2 id="decision-title">Keep this note?</h2>
+        <p id="decision-message">Your edits have not been saved yet.</p>
+        <div class="dialog-actions">
+          <button class="dialog-secondary" id="cancel-decision" type="button">Keep editing</button>
+          <button class="dialog-discard" id="discard-decision" type="button">Don't save</button>
+          <button class="dialog-save" id="save-decision" type="button">Save changes</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="toast" id="toast" role="alert" aria-live="assertive" hidden></div>
+    <script type="module" src="/main.ts"></script>
+  </body>
+</html>
